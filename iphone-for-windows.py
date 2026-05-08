@@ -14,7 +14,7 @@ from PIL import Image
 from flask import Flask, request
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                              QHBoxLayout, QPushButton, QLabel, QTextEdit, QMessageBox, 
-                             QFrame, QStackedWidget, QDialog)
+                             QFrame, QStackedWidget, QDialog,QScrollArea)
 from PySide6.QtCore import Qt, Signal, QPropertyAnimation, QEasingCurve, Property, QSize
 from PySide6.QtGui import QIcon, QCursor, QPainter, QColor, QBrush, QPixmap
 
@@ -34,7 +34,9 @@ ICON_MAP = {
     "dup": "https://cdn-icons-png.flaticon.com/128/14090/14090371.png",
     "privacy": "https://cdn-icons-png.flaticon.com/128/4413/4413865.png",
     "debug": "https://cdn-icons-png.flaticon.com/128/10061/10061742.png", # 齿轮按钮
-    "about_view": "https://cdn-icons-png.flaticon.com/128/639/639371.png" # 新增：关于我们主图
+    "about_view": "https://cdn-icons-png.flaticon.com/128/639/639371.png", # 新增：关于我们主图
+    "guide_step": "https://cdn4.winhlb.com/2026/05/08/69fdb18390535.png",
+    "guide_step_b": "https://cdn4.winhlb.com/2026/05/08/69fdb518be8a8.png"
 }
 
 # 自定义日志处理器
@@ -142,7 +144,10 @@ class SyncApp(QMainWindow):
         super().__init__()
         self.is_running = True
         self.last_text = ""
-        self.icons_dir = os.path.join(os.getcwd(), "icons")
+        # 获取当前脚本文件所在的绝对目录
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        # 无论在哪里运行，icons 文件夹永远在脚本同级目录下
+        self.icons_dir = os.path.join(self.base_dir, "icons")
         
         # 获取信息
         self.local_hostname = socket.gethostname()
@@ -167,20 +172,30 @@ class SyncApp(QMainWindow):
         self.start_server()
 
     def ensure_icons_ready(self):
-        if not os.path.exists(self.icons_dir): os.makedirs(self.icons_dir)
+        # 确保文件夹存在
+        if not os.path.exists(self.icons_dir):
+            os.makedirs(self.icons_dir)
+        
+        # 主图标路径也建议用 self.icons_dir
         self.main_icon_path = os.path.join(self.icons_dir, "main_icon.png")
+        
         if not os.path.exists(self.main_icon_path):
             try:
                 r = requests.get("https://cdn-icons-png.flaticon.com/512/644/644458.png", timeout=5)
                 with open(self.main_icon_path, 'wb') as f: f.write(r.content)
             except: pass
+
         for key, url in ICON_MAP.items():
             path = os.path.join(self.icons_dir, f"icon_{key}.png")
             if not os.path.exists(path):
                 try:
+                    # 增加 headers 模拟浏览器，防止被 Flaticon 拦截
                     r = requests.get(url, timeout=5, headers={'User-Agent': 'Mozilla/5.0'})
-                    with open(path, 'wb') as f: f.write(r.content)
-                except: print(f"下载图标 {key} 失败")
+                    if r.status_code == 200:
+                        with open(path, 'wb') as f: 
+                            f.write(r.content)
+                except Exception as e:
+                    print(f"下载图标 {key} 失败: {e}")
 
     def get_icon(self, key):
         path = os.path.join(self.icons_dir, f"icon_{key}.png")
@@ -297,18 +312,147 @@ class SyncApp(QMainWindow):
         self.pages.addWidget(page)
 
     def init_guide_page(self):
-        page = QWidget(); layout = QVBoxLayout(page); layout.setContentsMargins(30, 30, 30, 30)
-        layout.addWidget(QLabel("新手使用教程", styleSheet="font-size: 24px; font-weight: bold; margin-bottom: 15px;"))
-        guide_area = QTextEdit(); guide_area.setReadOnly(True)
-        guide_area.setStyleSheet("background: white; border-radius: 12px; padding: 20px; font-size: 14px;")
-        guide_content = f"""
-        <h2 style='color: #007AFF;'>第一步：网络配置</h2>
-        <p>确保手机和电脑在同一 Wi-Fi。</p>
-        <h2 style='color: #007AFF;'>第二步：快捷指令配置</h2>
-        <p>URL 填写：<code style='background: #F2F2F7;'>http://{self.local_ip}:5000/copy?msg=[剪贴板]&device=iPhone</code></p>
-        <p>方法建议选择 <b>GET</b>。</p>
-        """
-        guide_area.setHtml(guide_content); layout.addWidget(guide_area); self.pages.addWidget(page)
+        # 1. 创建最外层容器页面
+        page = QWidget()
+        page_layout = QVBoxLayout(page)
+        page_layout.setContentsMargins(0, 0, 0, 0)
+        page.setStyleSheet("background-color: #F2F2F7;")
+
+        # 2. 创建滚动区域 (实现类似浏览器的翻页效果)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setStyleSheet("background-color: transparent;")
+        # 优化滚动条样式，让它更美观
+        scroll.verticalScrollBar().setStyleSheet("""
+            QScrollBar:vertical { width: 8px; background: transparent; }
+            QScrollBar::handle:vertical { background: #C6C6C8; border-radius: 4px; }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
+        """)
+
+        # 3. 创建内容承载容器
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+        content_layout.setContentsMargins(20, 20, 20, 20)
+        content_layout.setSpacing(20)
+
+        # --- 4. 白色一体化大盒子 (Box) ---
+        container = QFrame()
+        container.setStyleSheet("""
+            QFrame { background-color: white; border-radius: 20px; border: 1px solid #E5E5EA; }
+            QLabel { border: none; background: transparent; }
+        """)
+        container_layout = QVBoxLayout(container)
+        container_layout.setContentsMargins(30, 30, 30, 30)
+        container_layout.setSpacing(20)
+
+        # --- 顶部：标题 + 方案 A 胶囊按钮 ---
+        header_layout = QHBoxLayout()
+        title_vbox = QVBoxLayout()
+        title = QLabel("保姆级上手教程")
+        title.setStyleSheet("font-size: 26px; font-weight: bold; color: #1C1C1E;")
+        subtitle = QLabel("只需简单几步，彻底打通 iPhone 与 PC 剪贴板")
+        subtitle.setStyleSheet("color: #8E8E93; font-size: 13px;")
+        title_vbox.addWidget(title); title_vbox.addWidget(subtitle)
+        header_layout.addLayout(title_vbox)
+        header_layout.addStretch()
+
+        link_url = "https://www.icloud.com/shortcuts/5782b63ecb6b415d955cc5001b27cb1d"
+        import_btn = QPushButton("一键导入指令")
+        import_btn.setFixedWidth(110)
+        import_btn.setCursor(Qt.PointingHandCursor)
+        import_btn.setFocusPolicy(Qt.NoFocus) 
+        import_btn.setStyleSheet("""
+            QPushButton { background-color: #007AFF; color: white; border-radius: 15px; 
+                          padding: 6px 0; font-weight: bold; font-size: 12px; border: none; }
+            QPushButton:hover { background-color: #0066CC; }
+        """)
+        import_btn.clicked.connect(lambda: self.copy_to_clipboard(link_url, "iCloud 链接已复制！"))
+        header_layout.addWidget(import_btn, alignment=Qt.AlignTop)
+        container_layout.addLayout(header_layout)
+
+        # --- 方案 A 提醒：换行 + IP 红字 ---
+        plan_a_tip = QLabel(
+            f"🚀 <b>方案 A：一键导入（推荐）</b><br>"
+            f"点击右上角按钮复制链接并添加。添加后，请务必修改最上方文本框，<br>"
+            f"将 文本 改为：<span style='color: #D70015; font-weight: bold;'>{self.local_ip}</span>"
+        )
+        plan_a_tip.setWordWrap(True)
+        plan_a_tip.setStyleSheet("""
+            background-color: #F8F9FF; color: #1C1C1E; padding: 15px; 
+            border-radius: 12px; border: 1px solid #DCEBFF; font-size: 13px;
+        """)
+        container_layout.addWidget(plan_a_tip)
+
+        # --- 方案 A 教程图 (guide_step) ---
+        img_label_a = QLabel()
+        img_label_a.setAlignment(Qt.AlignCenter)
+        try:
+            import requests
+            from PySide6.QtGui import QImage, QPixmap
+            res_a = requests.get("https://cdn4.winhlb.com/2026/05/08/69fdb18390535.png", timeout=5)
+            img_a = QImage.fromData(res_a.content)
+            pix_a = QPixmap.fromImage(img_a)
+            if not pix_a.isNull():
+                img_label_a.setPixmap(pix_a.scaledToWidth(500, Qt.SmoothTransformation))
+        except:
+            img_label_a.hide()
+        container_layout.addWidget(img_label_a)
+
+        # 分割线
+        line = QFrame(); line.setFrameShape(QFrame.HLine); line.setStyleSheet("background-color: #F2F2F7; max-height: 1px; border: none;")
+        container_layout.addWidget(line)
+
+        # --- 方案 B：手动配置 ---
+        container_layout.addWidget(QLabel("🛠️ 方案 B：四步手动配置", styleSheet="font-size: 18px; font-weight: bold; color: #1C1C1E;"))
+        s_style = "font-size: 15px; color: #3A3A3C;"
+        
+        container_layout.addWidget(QLabel("<b>1.</b> 打开 iPhone <b>快捷指令</b>，点击右上角 <b>+</b> 号。", styleSheet=s_style))
+        container_layout.addWidget(QLabel("<b>2.</b> 搜索并添加操作：<b>“获取剪贴板”</b>。", styleSheet=s_style))
+        
+        url_text = f"http://{self.local_ip}:5000/copy?msg="
+        url_btn = QPushButton(f"{url_text}[剪贴板]")
+        url_btn.setCursor(Qt.PointingHandCursor)
+        url_btn.setFocusPolicy(Qt.NoFocus)
+        url_btn.setStyleSheet("""
+            QPushButton { background-color: #F2F2F7; border: 1px dashed #C6C6C8; border-radius: 10px;
+                          padding: 12px; color: #D70015; text-align: left; font-family: Consolas; font-size: 14px; }
+            QPushButton:hover { background-color: #E8E8ED; }
+        """)
+        url_btn.clicked.connect(lambda: self.copy_to_clipboard(url_text, "URL 前缀已复制！"))
+        
+        container_layout.addWidget(QLabel("<b>3.</b> 添加操作 <b>“URL”</b>，输入：(点击下方复制)", styleSheet=s_style))
+        container_layout.addWidget(url_btn)
+        container_layout.addWidget(QLabel("<b>4.</b> 添加操作 <b>“获取 URL 的内容”</b>，点击完成。", styleSheet=s_style))
+
+        # --- 方案 B 教程图 (新添加的图层) ---
+        img_label_b = QLabel()
+        img_label_b.setAlignment(Qt.AlignCenter)
+        try:
+            res_b = requests.get("https://cdn4.winhlb.com/2026/05/08/69fdb518be8a8.png", timeout=5)
+            img_b = QImage.fromData(res_b.content)
+            pix_b = QPixmap.fromImage(img_b)
+            if not pix_b.isNull():
+                img_label_b.setPixmap(pix_b.scaledToWidth(500, Qt.SmoothTransformation))
+        except:
+            img_label_b.hide()
+        container_layout.addWidget(img_label_b)
+
+        # 5. 组装
+        content_layout.addWidget(container)
+        scroll.setWidget(content_widget)
+        page_layout.addWidget(scroll)
+
+        self.pages.addWidget(page)
+
+    def copy_to_clipboard(self, text, tip):
+        """点击复制功能的具体实现"""
+        try:
+            import pyperclip
+            pyperclip.copy(text)
+            QMessageBox.information(self, "快捷操作", tip)
+        except Exception as e:
+            print(f"复制失败: {e}")
 
     def init_about_page(self):
         """重构：关于我们页，添加主图和精美介绍"""
