@@ -301,10 +301,10 @@ class SyncApp(QMainWindow):
             l.addWidget(icon_lbl); l.addWidget(QLabel(text)); l.addStretch(); l.addWidget(sw)
             card_layout.addWidget(w); return sw
         self.auto_start_sw = add_item("系统开机自动启动", "autostart", chk=self.check_auto_start_status())
-        self.auto_paste_sw = add_item("智能模拟输入 (自动粘贴)", "paste")
-        self.auto_enter_sw = add_item("模拟输入后自动发送 (回车)", "enter")
-        self.dup_check_sw = add_item("开启重复内容校验确认弹窗", "dup")
-        self.privacy_sw = add_item("隐私保护模式 (打码日志)", "privacy", color="#FF9500")
+        self.auto_paste_sw = add_item("智能模拟输入 (自动粘贴)", "paste", chk=False)
+        self.auto_enter_sw = add_item("模拟输入后自动发送 (回车)", "enter", chk=False)
+        self.dup_check_sw = add_item("开启重复内容校验确认弹窗", "dup", chk=False)
+        self.privacy_sw = add_item("隐私保护模式 (打码日志)", "privacy", color="#FF9500", chk=False)
         self.auto_start_sw.state_signal.connect(lambda s: self.toggle_auto_start(2 if s else 0))
         layout.addWidget(card); layout.addStretch()
 

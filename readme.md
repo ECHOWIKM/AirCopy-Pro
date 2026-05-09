@@ -59,7 +59,7 @@ pip install flask pyside6 pyautogui pyperclip requests pystray pillow pyinstalle
 ```
 ### 2.执行打包命令：
 ```bash
-pyinstaller --noconfirm --onefile --windowed --add-data "icons;icons" --icon "icons/icon_status.png" iphone-for-windows.py
+pyinstaller --noconfirm --onefile --windowed --add-data "icons;icons" --icon "icons/icon.png" iphone-for-windows.py
 ```
 ## 📱 iPhone 端配置
 
