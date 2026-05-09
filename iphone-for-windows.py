@@ -39,6 +39,14 @@ ICON_MAP = {
     "guide_step_b": "https://cdn4.winhlb.com/2026/05/08/69fdb518be8a8.png"
 }
 
+def resource_path(relative_path):
+    """ 获取资源的绝对路径，兼容开发环境和 PyInstaller 打包后的环境 """
+    if hasattr(sys, '_MEIPASS'):
+        # 打包后的路径
+        return os.path.join(sys._MEIPASS, relative_path)
+    # 源码运行时的路径
+    return os.path.join(os.path.abspath("."), relative_path)
+
 # 自定义日志处理器
 class FlaskLogHandler(logging.Handler):
     def __init__(self, signal):
