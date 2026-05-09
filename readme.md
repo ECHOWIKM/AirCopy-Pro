@@ -25,16 +25,26 @@
 
 ## 🛠️ 安装与运行
 
-### 1. 环境准备
+### 方式一：直接下载运行 (推荐 ⭐️)
+<p align="center">
+  <a href="https://github.com/ECHOWIKM/AirCopy-Pro/raw/refs/heads/main/dist/iphone-for-windows.exe">
+    <img src="https://img.shields.io/badge/下载%20AirCopy--Pro-Windows%20EXE-34C759?style=for-the-badge&logo=windows&logoColor=white" alt="下载 AirCopy-Pro">
+  </a>
+  <br>
+  <font size="2" color="#8E8E93">无需安装 Python 环境，即开即用</font>
+</p>
+
+### 方式二：开发者手动运行
+#### 1. 环境准备
 确保你的电脑已安装 Python 3.8+。
 
-### 2. 获取代码并安装依赖
+#### 2. 获取代码并安装依赖
 ```bash
 git clone https://github.com/ECHOWIKM/AirCopy-Pro.git
 cd AirCopy-Pro
 pip install flask pyside6 pyautogui pyperclip requests pystray pillow 
 ```
-### 3. 运行程序
+#### 3. 运行程序
 ```bash
 python iphone-for-windows.py
 ```
@@ -51,13 +61,13 @@ pip install flask pyside6 pyautogui pyperclip requests pystray pillow pyinstalle
 ```bash
 pyinstaller --noconfirm --onefile --windowed --add-data "icons;icons" --icon "icons/icon_status.png" iphone-for-windows.py
 ```
-### 📱 iPhone 端配置
+## 📱 iPhone 端配置
 
-#### 方案 A：一键导入指令 (推荐 ⭐️)
+### 方案 A：一键导入指令 (推荐 ⭐️)
 <p align="center">
   在 iPhone 上点击链接导入：<br>
   <a href="https://www.icloud.com/shortcuts/5782b63ecb6b415d955cc5001b27cb1d">
-    <img src="https://img.shields.io/badge/AirCopy--Pro-一键导入快捷指令-007AFF?style=for-the-badge&logo=apple" alt="AirCopy-Pro 一键导入快捷指令">
+    <img src="https://img.shields.io/badge/AirCopy--Pro-一键导入icloud快捷指令-007AFF?style=for-the-badge&logo=apple" alt="AirCopy-Pro 一键导入快捷指令">
   </a>
 </p>
 
@@ -67,7 +77,7 @@ pyinstaller --noconfirm --onefile --windowed --add-data "icons;icons" --icon "ic
 
 3. 保存并运行。
 > ![教程1](https://github.com/ECHOWIKM/AirCopy-Pro/blob/main/icons/icon_guide_step.png)
-#### 方案 B：手动配置
+### 方案 B：手动配置
 1.打开 iPhone 快捷指令。
 
 2.创建一个新指令：获取剪贴板 -> URL[下方链接内容]-> 获取 URL 内容。
@@ -79,14 +89,14 @@ pyinstaller --noconfirm --onefile --windowed --add-data "icons;icons" --icon "ic
 推荐配合“`背面轻点`”或“`辅助触控`”使用，体验更佳。
 可设置双击“`小白点`”进行粘贴板的传输。
 
-### ❓ 常见问题 (FAQ)
+## ❓ 常见问题 (FAQ)
 Q: 无法连接到电脑？ A: 请确保手机和电脑处于同一 WiFi 下，并检查 Windows 防火墙是否允许 5000 端口通行。
 
 Q: 打包后 EXE 报错拒绝访问？ A: 请确保后台没有正在运行的旧版本程序，关闭它后再重新打包。
 
 Q: 隐私模式有什么用？ A: 开启后，主界面日志中的文本会以 *** 显示，防止在展示或录屏时泄露敏感剪贴板内容。
 
-### 📜 开源协议
+## 📜 开源协议
 本项目基于 MIT License 协议开源。
 
 ---
