@@ -66,7 +66,7 @@ pyinstaller --noconfirm --onefile --windowed --add-data "icons;icons" --icon "ic
 2. 将最上方的 **“文本”** 框内容修改为你电脑端显示的 **IP 地址** (例如 `192.168.1.5`)。
 
 3. 保存并运行。
-
+> ![教程1](https://github.com/ECHOWIKM/AirCopy-Pro/blob/main/icons/icon_guide_step.png)
 #### 方案 B：手动配置
 1.打开 iPhone 快捷指令。
 
@@ -74,7 +74,7 @@ pyinstaller --noconfirm --onefile --windowed --add-data "icons;icons" --icon "ic
 
 3.URL 格式：http://[你的电脑IP]:5000/copy?msg=[剪贴板文本]。
 
-> ![教程](https://github.com/ECHOWIKM/AirCopy-Pro/blob/main/icons/icon_guide_step_b.png)
+> ![教程2](https://github.com/ECHOWIKM/AirCopy-Pro/blob/main/icons/icon_guide_step_b.png)
 
 推荐配合“`背面轻点`”或“`辅助触控`”使用，体验更佳。
 可设置双击“`小白点`”进行粘贴板的传输。
